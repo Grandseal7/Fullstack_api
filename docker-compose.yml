@@ -1,0 +1,54 @@
+# docker-compose.yml — весь «АгроМаркет» одной командой (запускать из папки agromarket-api):
+#   docker compose up -d --build
+# Папки agromarket-api и agromarket-react должны лежать рядом.
+# Сайт: http://localhost:8080   API напрямую: http://localhost:3001/api/health
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: agromarket
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres123}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agromarket"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy   # ждём, пока база реально готова принимать соединения
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      # Внутри сети Docker база — это хост "db", а не localhost
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-postgres123}@db:5432/agromarket
+      JWT_SECRET: ${JWT_SECRET:-change_me_in_production_secret_2026_xxxxxxxx}
+      JWT_EXPIRES_IN: 2h
+      CORS_ORIGIN: http://localhost:8080,http://localhost:5173
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@agromarket.kz}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin12345}
+    ports:
+      - "3001:3001"
+    # При старте контейнер выполняет db/migrate.js: таблицы, товары из data/db.json и админ
+
+  web:
+    build:
+      context: ../agromarket-react
+      args:
+        VITE_API_URL: ""   # относительный /api → Nginx → api:3001
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata:

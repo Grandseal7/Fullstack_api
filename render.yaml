@@ -1,0 +1,23 @@
+# render.yaml — описание сервиса Render как код (Blueprint). Значения секретов — только в панели
+services:
+  - type: web
+    name: agromarket-api
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: main
+    buildCommand: npm ci --omit=dev
+    startCommand: npm run db:migrate && npm start
+    healthCheckPath: /api/health
+    autoDeploy: false          # деплоем управляет GitHub Actions (deploy hook)
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_EXPIRES_IN
+        value: 2h
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false

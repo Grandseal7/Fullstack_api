@@ -1,0 +1,153 @@
+### Переменные (REST Client для VS Code)
+@base = http://localhost:3001/api
+@adminToken = вставьте_токен_из_ответа_login_админа
+@buyerToken = вставьте_токен_из_ответа_register_покупателя
+
+### Проверка сервера (200)
+GET {{base}}/health
+
+### Все товары (200)
+GET {{base}}/products
+
+### Поиск + фильтры + сортировка (200)
+GET {{base}}/products?search=мол&maxPrice=5000&sort=-price
+
+### Один товар (200)
+GET {{base}}/products/1
+
+### Несуществующий товар (404)
+GET {{base}}/products/999999
+
+### Некорректный id (400)
+GET {{base}}/products/abc
+
+### Категории (200)
+GET {{base}}/categories
+
+### Регистрация покупателя (201)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Айгерим",
+  "email": "buyer@mail.kz",
+  "password": "qwerty123"
+}
+
+### Попытка стать админом через role (201, но role = buyer)
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Хакер",
+  "email": "hacker@mail.kz",
+  "password": "qwerty123",
+  "role": "admin"
+}
+
+### Вход администратора (200)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@agromarket.kz",
+  "password": "Admin12345"
+}
+
+### Неверный пароль (401)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@agromarket.kz",
+  "password": "wrong"
+}
+
+### Кто я (200)
+GET {{base}}/auth/me
+Authorization: Bearer {{adminToken}}
+
+### Товар без токена (401)
+POST {{base}}/products
+Content-Type: application/json
+
+{ "name": "Сыр домашний, 500 г", "price": 2200, "category": "Молочное" }
+
+### Товар от покупателя (403)
+POST {{base}}/products
+Content-Type: application/json
+Authorization: Bearer {{buyerToken}}
+
+{ "name": "Сыр домашний, 500 г", "price": 2200, "category": "Молочное" }
+
+### Товар от админа (201)
+POST {{base}}/products
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{ "name": "Сыр домашний, 500 г", "price": 2200, "category": "Молочное", "unit": "шт" }
+
+### Ошибка валидации (400)
+POST {{base}}/products
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{ "name": "", "price": -50 }
+
+### Обновить товар #1 (200)
+PUT {{base}}/products/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{ "name": "Картофель молодой, 1 кг", "price": 420, "category": "Овощи" }
+
+### Частично обновить товар #1 (200)
+PATCH {{base}}/products/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{ "price": 400 }
+
+### Удалить товар #2 (204)
+DELETE {{base}}/products/2
+Authorization: Bearer {{adminToken}}
+
+### Оптовая заявка (201)
+POST {{base}}/orders
+Content-Type: application/json
+
+{ "name": "ТОО Агро", "email": "agro@mail.kz", "phone": "+7 701 000 00 00", "quantity": 50, "date": "2026-12-01" }
+
+### Заявка меньше 10 кг (400)
+POST {{base}}/orders
+Content-Type: application/json
+
+{ "name": "Тест", "email": "t@t.kz", "quantity": 5 }
+
+### Заказ из корзины (201)
+POST {{base}}/orders
+Content-Type: application/json
+Authorization: Bearer {{buyerToken}}
+
+{ "name": "Айгерим", "email": "buyer@mail.kz", "items": [{ "productId": 1, "quantity": 3 }] }
+
+### Мои заказы (200)
+GET {{base}}/orders/my
+Authorization: Bearer {{buyerToken}}
+
+### Все заявки — только админ (200)
+GET {{base}}/orders
+Authorization: Bearer {{adminToken}}
+
+### Статус заявки (200)
+PATCH {{base}}/orders/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{ "status": "processing" }
+
+### Битый JSON (400)
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{ "email": "a@a.kz",

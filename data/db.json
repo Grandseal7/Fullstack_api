@@ -1,0 +1,12 @@
+{
+  "products": [
+    { "id": 1, "name": "Картофель, 1 кг", "price": 350, "unit": "кг", "category": "Овощи", "stock": 500, "description": "Молодой картофель из Акмолинской области", "image": "https://placehold.co/300x200?text=Potato" },
+    { "id": 2, "name": "Морковь, 1 кг", "price": 300, "unit": "кг", "category": "Овощи", "stock": 300, "description": "Сладкая морковь, урожай этого года", "image": "https://placehold.co/300x200?text=Carrot" },
+    { "id": 3, "name": "Мёд натуральный, 1 л", "price": 4500, "unit": "л", "category": "Пчеловодство", "stock": 40, "description": "Цветочный мёд с пасеки под Бурабаем", "image": "https://placehold.co/300x200?text=Honey" },
+    { "id": 4, "name": "Молоко фермерское, 1 л", "price": 600, "unit": "л", "category": "Молочное", "stock": 80, "description": "Цельное молоко, жирность 3,6–4 %", "image": "https://placehold.co/300x200?text=Milk" },
+    { "id": 5, "name": "Сыр домашний, 500 г", "price": 2200, "unit": "шт", "category": "Молочное", "stock": 25, "description": "Мягкий сыр из коровьего молока", "image": "https://placehold.co/300x200?text=Cheese" },
+    { "id": 6, "name": "Яблоки апорт, 1 кг", "price": 900, "unit": "кг", "category": "Фрукты", "stock": 200, "description": "Алматинский апорт", "image": "https://placehold.co/300x200?text=Apples" },
+    { "id": 7, "name": "Пшеничная мука, 2 кг", "price": 800, "unit": "шт", "category": "Зерновые", "stock": 150, "description": "Мука высшего сорта", "image": "https://placehold.co/300x200?text=Flour" },
+    { "id": 8, "name": "Яйца куриные, 10 шт", "price": 750, "unit": "шт", "category": "Птицеводство", "stock": 120, "description": "Яйца от кур свободного выгула", "image": "https://placehold.co/300x200?text=Eggs" }
+  ]
+}

@@ -1,0 +1,11 @@
+node_modules
+coverage
+.env
+.env.*
+.git
+.github
+tests
+postman
+docker-compose.yml
+requests.http
+*.md

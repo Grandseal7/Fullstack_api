@@ -1,0 +1,73 @@
+# .github/workflows/ci.yml — тесты на каждый PR; после merge в main: тесты → деплой → smoke
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: agromarket_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/agromarket_test
+      JWT_SECRET: ci_test_secret_key_long_enough_000000
+      CORS_ORIGIN: http://localhost:5173
+      ADMIN_EMAIL: admin@agromarket.kz
+      ADMIN_PASSWORD: Admin12345
+    steps:
+      - name: Скачать код
+        uses: actions/checkout@v4
+
+      - name: Установить Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Установить зависимости
+        run: npm ci
+
+      - name: Аудит продакшен-зависимостей
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Автотесты
+        run: npm test
+
+  deploy:
+    needs: test                     # только после зелёных тестов
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency: production         # два деплоя одновременно не пойдут
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # ref=SHA: Render развернёт ровно тот коммит, который прошёл тесты
+      - name: Деплой на Render
+        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}&ref=${{ github.sha }}"
+
+      - name: Smoke-тест продакшена
+        run: node scripts/smoke.js
+        env:
+          API_URL: ${{ vars.API_URL }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          EXPECTED_VERSION: ${{ github.sha }}
